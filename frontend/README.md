@@ -1,6 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/let-the-dreamers-rise/greentrace/main/frontend/public/favicon.ico" alt="GreenTrace Logo" width="120" height="120">
-  <h1 align="center">GreenTrace Client Interface</h1>
+  <h1 align="center">GreenTrace Frontend</h1>
   <p align="center">
     <strong>Sleek, Dynamic, and Evidence-Led ESG Scrutiny</strong>
   </p>
@@ -138,7 +137,3 @@ Deploying the frontend requires specific configurations since the Next.js app is
    - Key: `NEXT_PUBLIC_BACKEND_API_URL`
    - Value: `http://YOUR_EC2_IP:8000` (e.g., `http://3.235.253.57:8000`)
 4. Trigger a manual **Redeploy**.
-
-*(Important: Ensure `frontend/app/lib/` is actively tracked in Git. The root Python `.gitignore` must use `/lib/` and not `/lib/*` to prevent ignoring these critical Javascript modules).*
-
----

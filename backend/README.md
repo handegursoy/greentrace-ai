@@ -1,6 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/let-the-dreamers-rise/greentrace/main/frontend/public/favicon.ico" alt="GreenTrace Logo" width="120" height="120">
-  <h1 align="center">GreenTrace Backend Core</h1>
+  <h1 align="center">GreenTrace Backend</h1>
   <p align="center">
     <strong>The Evidence-Led Sustainability Scrutiny Engine</strong>
   </p>
@@ -252,4 +251,3 @@ sudo systemctl restart greentrace
 ```
 
 ---
-*Built with precision for the Surge 2.0 Hackathon.*
