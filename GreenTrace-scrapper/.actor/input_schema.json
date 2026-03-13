@@ -1,0 +1,58 @@
+{
+    "$schema": "https://apify.com/schemas/v1/input.ide.json",
+    "title": "Company ESG search orchestrator",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "company": {
+            "title": "Company",
+            "type": "string",
+            "description": "Single company name to search for.",
+            "editor": "textfield",
+            "default": "H&M"
+        },
+        "query_suffix": {
+            "title": "Query suffix",
+            "type": "string",
+            "description": "Keywords appended after the company name in the Google query.",
+            "editor": "textfield",
+            "default": "ESG sustainability greenwashing 2024 2025"
+        },
+        "results_per_page": {
+            "title": "Results per page",
+            "type": "integer",
+            "description": "How many Google results to request per search page.",
+            "editor": "number",
+            "default": 10,
+            "minimum": 1
+        },
+        "max_pages_per_query": {
+            "title": "Max pages per query",
+            "type": "integer",
+            "description": "Maximum number of Google result pages to fetch for the company query.",
+            "editor": "number",
+            "default": 1,
+            "minimum": 1
+        },
+        "keyword_terms": {
+            "title": "Keyword terms",
+            "type": "array",
+            "description": "Optional ESG-related keywords used to annotate the crawler output.",
+            "editor": "stringList",
+            "default": [
+                "esg",
+                "sustainability",
+                "greenwashing",
+                "climate",
+                "emissions",
+                "governance"
+            ],
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "required": [
+        "company"
+    ]
+}
