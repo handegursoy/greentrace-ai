@@ -24,6 +24,13 @@ class Settings:
         self.apify_token = os.getenv("APIFY_TOKEN", "")
         self.apify_actor_id = os.getenv("APIFY_ACTOR_ID", "sama4/greentrace-scrapper")
         self.apify_timeout_secs = int(os.getenv("APIFY_TIMEOUT_SECS", "300"))
+        self.qdrant_url = os.getenv("QDRANT_URL", "")
+        self.qdrant_api_key = os.getenv("QDRANT_API_KEY", "")
+        self.qdrant_collection_name = os.getenv("QDRANT_COLLECTION_NAME", "company_evidence")
+        self.embedding_provider = os.getenv("EMBEDDING_PROVIDER", "qdrant-fastembed")
+        self.embedding_model_name = os.getenv("EMBEDDING_MODEL_NAME", "BAAI/bge-small-en")
+        self.chunk_size_words = int(os.getenv("CHUNK_SIZE_WORDS", "180"))
+        self.chunk_overlap_words = int(os.getenv("CHUNK_OVERLAP_WORDS", "40"))
 
 
 @lru_cache

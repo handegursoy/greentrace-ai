@@ -5,5 +5,6 @@ requires-python = ">=3.12"
 dependencies = [
   "apify-client>=1.12.1",
   "fastapi>=0.124.2",
+  "qdrant-client[fastembed]>=1.14.2",
   "uvicorn>=0.38.0",
 ]
