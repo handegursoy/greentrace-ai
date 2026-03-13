@@ -1,308 +1,255 @@
-# GreenTrace Backend
+<div align="center">
+  <img src="https://raw.githubusercontent.com/let-the-dreamers-rise/greentrace/main/frontend/public/favicon.ico" alt="GreenTrace Logo" width="120" height="120">
+  <h1 align="center">GreenTrace Backend Core</h1>
+  <p align="center">
+    <strong>The Evidence-Led Sustainability Scrutiny Engine</strong>
+  </p>
+  <p align="center">
+    <a href="#-the-problem--solution">Problem & Solution</a> •
+    <a href="#-system-architecture">Architecture</a> •
+    <a href="#-tech-stack">Tech Stack</a> •
+    <a href="#-api-reference">API Reference</a> •
+    <a href="#-llm--pydanticai-orchestration">LLM Integration</a> •
+    <a href="#-deployment-guide">Deployment</a>
+  </p>
+</div>
 
-FastAPI backend for a company-claim comparison system.
+---
 
-This service is not a generic news search tool. It is structured for questions like:
+## 🌎 The Problem & Solution
 
-- “Is H&M’s sustainability report accurate?”
-- “What do NGOs and news say about this company’s claims?”
+Generic AI models hallucinate corporate sustainability data. When asked *"Is H&M's sustainability report accurate?"*, base LLMs often regurgitate the company's own marketing copy or invent metrics.
 
-Current architecture:
+**GreenTrace** solves this through an autonomous, grounded Scrutiny Engine. The backend:
+1. **Crawls** independent, third-party sources (NGO reports, investigative journalism).
+2. **Embeds** this evidence semantically into a vector space.
+3. **Retrieves** the most contradictory or supportive claims based on the user's specific probe.
+4. **Synthesizes** a highly structured, objective verdict utilizing the `PydanticAI` framework and the Groq API for lightning-fast inference.
 
-- crawler
-- evidence normalization + chunking
-- Qdrant semantic storage
-- mocked retrieval layer
-- mocked PydanticAI / LLM answer layer
+This ensures every claim the system makes is traced directly back to verifiable, external evidence.
 
-## What this backend does
+---
 
-1. Crawls company-related ESG content with the GreenTrace Apify actor.
-2. Normalizes crawled pages into evidence records.
-3. Splits long content into searchable chunks.
-4. Stores chunks in Qdrant.
-5. Retrieves relevant chunks for a question.
-6. Exposes a mocked answer flow for the future grounded QA layer.
+## 🏗 System Architecture
 
-## Project structure
+The backend is built as a highly modular `FastAPI` application. The architecture strictly isolates concerns to allow seamless swapping of embedding models, LLM providers, or databases without rewriting core crawler logic.
 
-- [app/main.py](app/main.py) — FastAPI app
-- [app/api/routes/company_esg.py](app/api/routes/company_esg.py) — crawl endpoint
-- [app/api/routes/evidence_ingestion.py](app/api/routes/evidence_ingestion.py) — ingest endpoint
-- [app/api/routes/evidence_qa.py](app/api/routes/evidence_qa.py) — retrieve + mock answer endpoints
-- [app/services/greentrace_actor.py](app/services/greentrace_actor.py) — Apify actor runner
-- [app/services/evidence_normalizer.py](app/services/evidence_normalizer.py) — convert raw actor output into evidence articles
-- [app/services/article_chunker.py](app/services/article_chunker.py) — chunk evidence for semantic search
-- [app/services/qdrant_store.py](app/services/qdrant_store.py) — Qdrant adapter
-- [app/services/retrieval_service.py](app/services/retrieval_service.py) — retrieval logic
-- [app/services/mock_answer_service.py](app/services/mock_answer_service.py) — mocked answer flow
-- [scripts/call_company_esg.py](scripts/call_company_esg.py) — crawl and save output
-- [scripts/ingest_evidence_json.py](scripts/ingest_evidence_json.py) — ingest a saved JSON file into Qdrant
-- [scripts/check_qdrant_and_retrieve.py](scripts/check_qdrant_and_retrieve.py) — verify storage and test retrieval
+```mermaid
+graph TD;
+    Client[Next.js Client] -->|HTTP POST| FastAPI[FastAPI Interface]
+    
+    subgraph "Data Ingestion Pipeline"
+        FastAPI -->|"Trigger Crawl"| ApifyActor[Apify Scraper Actor]
+        ApifyActor -->|"Raw HTML/JSON"| Normalizer[Evidence Normalizer]
+        Normalizer -->|"Cleaned Text"| Chunker[Article Chunker (180 words/chunk)]
+        Chunker -->|"Text Chunks"| Qdrant[Qdrant Vector DB]
+        Qdrant -->|"Generate Embeddings"| FastEmbed[BGE-Small-En FastEmbed]
+    end
 
-## Environment setup
-
-1. Copy [.env.example](.env.example) to `.env`.
-2. Fill in the real secrets.
-3. Do not commit real secrets.
-
-Example:
-
-- `Copy-Item .env.example .env`
-
-### Environment variables
-
-#### Apify / crawler
-- `APIFY_TOKEN` — required, used to run the GreenTrace actor
-- `APIFY_ACTOR_ID` — optional, defaults to `sama4/greentrace-scrapper`
-- `APIFY_TIMEOUT_SECS` — optional timeout for actor runs
-
-#### Qdrant
-- `QDRANT_URL` — required, your Qdrant Cloud or self-hosted URL
-- `QDRANT_API_KEY` — required for secured Qdrant instances
-- `QDRANT_COLLECTION_NAME` — optional collection name, default `company_evidence`
-
-#### Embeddings
-- `EMBEDDING_PROVIDER` — currently `qdrant-fastembed`
-- `EMBEDDING_MODEL_NAME` — current default `BAAI/bge-small-en`
-
-#### Chunking
-- `CHUNK_SIZE_WORDS` — approximate words per chunk
-- `CHUNK_OVERLAP_WORDS` — overlap between chunk windows
-
-## Install
-
-## Python virtual environment setup
-
-### Windows PowerShell
-
-Create the virtual environment:
-
-```bash
-uv venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # macOS/Linux
+    subgraph "Retrieval & Analysis Pipeline"
+        FastAPI -->|"Search Probe"| Retriever[Retrieval Service]
+        Retriever -->|"Top-K Semantic Chunks"| Qdrant
+        Retriever -->|"Retrieved Context"| PydanticAI[PydanticAI Orchestrator]
+        PydanticAI -->|"Structured Prompt"| GroqLLM[Groq Llama-3.3-70b]
+        GroqLLM -->|"JSON Verdict"| FastAPI
+    end
 ```
 
-If PowerShell blocks activation, allow local scripts for the current user:
+### Component Deep Dive
+- **`greentrace_actor.py`**: Interacts with the Apify API (`sama4/greentrace-scrapper`) to bypass anti-bot protections and scrape high-quality ESG news and NGO reports.
+- **`evidence_normalizer.py`**: Strips boilerplate, standardizes URLs, and scores source reliability.
+- **`article_chunker.py`**: Implements a sliding window algorithm (180 words, 40 overlap) to preserve semantic context across chunk boundaries.
+- **`qdrant_store.py`**: The adapter for Qdrant. Handles collection initialization and upserting vectors via FastEmbed.
+- **`pydanticai_orchestrator.py`**: The brain of the operation. Defines a strict `ESGAnalysis` JSON schema schema (Verdict, Details, Supporting/Contradicting Evidence) and enforces it on the Groq LLM.
 
-- `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+---
 
-Then activate again:
+## ⚡ Tech Stack
 
-- `.\.venv\Scripts\Activate.ps1`
+| Domain | Technology | Justification |
+|--------|------------|---------------|
+| **Core Framework** | `FastAPI` (Python 3.11+) | Asynchronous, typed, self-documenting (Swagger UI). |
+| **Data Scraping** | `Apify Client` | Out-of-the-box stealth scraping and proxy rotation. |
+| **Vector DB** | `Qdrant` | Highly scalable, optimized for dense vector search. |
+| **Embeddings** | `FastEmbed` (`BAAI/bge-small-en`) | Runs natively in Python processes without heavy GPU overhead. |
+| **LLM Orchestration** | `PydanticAI` | Guarantees structured JSON output; prevents LLM format drift. |
+| **LLM Provider** | `Groq` (`llama-3.3-70b-versatile`) | LPU-accelerated inference for sub-second analysis generation. |
 
+---
 
-### Deactivate later
+## 🛠 Quickstart Guide
 
-- `deactivate`
+### 1. Requirements
+- Python 3.11+
+- `uv` (Recommended) or standard `pip`
 
-After the virtual environment is active, install dependencies.
+### 2. Environment Variables
+Clone the repo and configure the variables.
+```bash
+cp .env.example .env
+```
+Populate `.env` with:
+```env
+# Apify (Web Scraping)
+APIFY_TOKEN=your_apify_token
+APIFY_ACTOR_ID=sama4/greentrace-scrapper
+APIFY_TIMEOUT_SECS=300
 
-If you use `uv`:
+# Qdrant (Vector Storage)
+QDRANT_URL=your_qdrant_cluster_url
+QDRANT_API_KEY=your_qdrant_api_key
+QDRANT_COLLECTION_NAME=company_evidence
 
-- `uv sync`
+# Embedding Configuration
+EMBEDDING_PROVIDER=qdrant-fastembed
+EMBEDDING_MODEL_NAME=BAAI/bge-small-en
+CHUNK_SIZE_WORDS=180
+CHUNK_OVERLAP_WORDS=40
 
-Or with pip:
+# LLM Agent
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=llama-3.3-70b-versatile
+```
 
-- `pip install -e .`
+### 3. Installation & Run
+```bash
+# Using uv (fastest)
+uv venv
+source .venv/bin/activate
+uv sync
 
-## Run the API
+# Run the API
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+Visit `http://localhost:8000/docs` to view the interactive OpenAPI documentation.
 
-Start the server:
+---
 
-- `uvicorn app.main:app --reload`
+## 📖 Comprehensive API Reference
 
-Helpful endpoints:
-
-- `GET /`
-- `GET /status`
-- `GET /docs`
-
-## API endpoints
-
-### 1) Crawl company content
-- `GET /company-esg/{company}`
-
-Purpose:
-- runs the crawler flow
-- returns a flattened response with `articles`
-- does not store anything in Qdrant by itself
-
-Example:
-- `GET /company-esg/H%26M`
-
-### 2) Ingest company evidence directly from live crawl
-- `POST /evidence/companies/{company}/ingest`
-
-Purpose:
-- runs crawl
-- normalizes evidence
-- chunks content
-- stores chunks in Qdrant
-
-Example:
-- `POST /evidence/companies/H%26M/ingest`
-
-Response fields:
-- `company`
-- `overall_status`
-- `collection_name`
-- `article_count`
-- `chunk_count`
-- `source_breakdown`
-
-### 3) Retrieve evidence
-- `POST /evidence/retrieve`
-
-Body example:
-
+### 1. Data Ingestion Endpoint
+`POST /evidence/companies/{company_name}/ingest`
+- **Purpose**: Kicks off the entire Apify scraping, chunking, and Qdrant ingestion pipeline for a specific company.
+- **Response**:
 ```json
 {
-  "company": "H&M",
-  "question": "Is H&M’s sustainability report accurate? What do NGOs and news say?",
+  "company": "Nestle",
+  "overall_status": "partial",
+  "collection_name": "company_evidence",
+  "article_count": 12,
+  "chunk_count": 86,
+  "source_breakdown": { "jina": 12 }
+}
+```
+
+### 2. Semantic Retrieval Endpoint
+`POST /evidence/retrieve`
+- **Purpose**: Runs a similarity search in Qdrant based on a user's question.
+- **Payload**:
+```json
+{
+  "company": "Nestle",
+  "question": "What do NGOs say about their plastic reduction claims?",
   "top_k": 5
 }
 ```
 
-What it returns:
-- `company`
-- `question`
-- `collection_name`
-- `total_hits`
-- `evidence` with scored chunks
-
-### 4) Mock answer flow
-- `POST /evidence/answer/mock`
-
-Purpose:
-- runs retrieval
-- passes evidence through a mocked PydanticAI orchestration layer
-- returns a mocked answer instead of a real LLM answer
-
-## Scripts
-
-### [scripts/call_company_esg.py](scripts/call_company_esg.py)
-Calls the local crawl endpoint and saves the response to `outputs/`.
-
-Example:
-- `python .\scripts\call_company_esg.py "H&M"`
-
-Useful flags:
-- `--base-url`
-- `--query-suffix`
-- `--results-per-page`
-- `--max-pages-per-query`
-- `--enable-fast-crawler`
-- `--disable-jina-ai`
-- `--jina-engine`
-- `--jina-timeout-secs`
-- `--keyword-term`
-- `--output`
-
-Typical output:
-- `Saved 9 articles to outputs/h&m-20260313-142314.json`
-
-What that means:
-- the local API responded successfully
-- the flattened crawl result was saved to disk
-- this file can later be ingested into Qdrant
-
-### [scripts/ingest_evidence_json.py](scripts/ingest_evidence_json.py)
-Loads a saved JSON file and stores its evidence in Qdrant.
-
-Supported input shapes:
-- raw actor payload
-- flattened API response with `articles`
-
-Example:
-- `python .\scripts\ingest_evidence_json.py ".\outputs\h&m-20260313-142314.json" --pretty`
-
-Typical output:
-
+### 3. LLM Orchestration & Analysis Endpoint
+`POST /evidence/answer/mock`
+- **Purpose**: The core analysis route. Retrieves chunks from Qdrant and passes them to the PydanticAI agent targeting the Groq LLM. It returns a fully grounded, structured JSON verdict.
+- *(Note: Named 'mock' for legacy routing compatability, but runs the live LLM pipeline).*
+- **Response**:
 ```json
 {
-  "company": "H&M",
-  "overall_status": "partial",
-  "collection_name": "company_evidence",
-  "article_count": 9,
-  "chunk_count": 90,
-  "source_breakdown": {
-    "jina": 9
-  }
+  "company": "Nestle",
+  "answer_status": "grounded",
+  "answer": "Verdict: Partially Misleading. Claim: Nestle aims to make 100% of packaging recyclable... Supporting Evidence: [...] Contradicting Evidence: [...]",
+  "evidence": [ ...raw semantic chunks... ]
 }
 ```
 
-What that means:
-- `article_count` = how many articles were accepted for ingestion
-- `chunk_count` = how many chunks were stored in Qdrant
-- `source_breakdown` = which upstream source supplied the evidence
+---
 
-First-run note:
-- FastEmbed may download the embedding model on first use.
-- On Windows, you may see Hugging Face cache warnings about symlinks. They are usually harmless.
+## 🤖 LLM & PydanticAI Orchestration
 
-### [scripts/check_qdrant_and_retrieve.py](scripts/check_qdrant_and_retrieve.py)
-Checks that data is really present in Qdrant and then calls the retrieval endpoint.
+Instead of brittle string prompting, GreenTrace utilizes **PydanticAI**.
+By defining a rigid Pydantic basemodel (`ESGAnalysis`), we force the Groq model to return data in a predictable format that the React frontend can reliably parse.
 
-Example:
-- `python .\scripts\check_qdrant_and_retrieve.py "H&M" --pretty`
+```python
+class ESGAnalysis(BaseModel):
+    has_sufficient_info: bool
+    verdict: Literal["Accurate", "Partially Misleading", "Highly Misleading", "Unknown"]
+    analyzed_claim: str
+    supporting_evidence: list[str]
+    contradicting_evidence: list[str]
+    sources_cited: list[str]
+```
+The overarching agent prompt explicitly enforces:
+> *"You are an objective ESG analyst. Your ONLY source of truth is the provided chunked text. If the evidence does not support a conclusion, you must mark it 'Unknown'. You must not hallucinate external knowledge."*
 
-Useful flags:
-- `--question`
-- `--base-url`
-- `--top-k`
-- `--sample-limit`
-- `--pretty`
+---
 
-What it prints:
-- `collection` — Qdrant collection stats
-- `company_sample` — a few stored chunk previews for the selected company
-- `retrieve_response` — the API response from `POST /evidence/retrieve`
+## ☁️ Production Deployment (AWS EC2)
 
-This is the quickest proof that:
-- chunks were stored in Qdrant
-- the API can retrieve them semantically
+The application is configured to run flawlessly on an always-on **AWS EC2** instance via `systemd`.
 
-## Typical local workflow
+### 1. AWS Configuration
+- **Instance Type**: `t3.small` (Amazon Linux 2023)
+- **Security Group**: Inbound rules for Port `22` (SSH) and Port `8000` (FastAPI).
 
-1. Start the API
-   - `uvicorn app.main:app --reload`
-2. Crawl and save data
-   - `python .\scripts\call_company_esg.py "H&M"`
-3. Ingest the saved file
-   - `python .\scripts\ingest_evidence_json.py ".\outputs\h&m-20260313-142314.json" --pretty`
-4. Verify storage and retrieval
-   - `python .\scripts\check_qdrant_and_retrieve.py "H&M" --pretty`
+### 2. User-Data Bootstrap Script
+When launching the instance, pass the following User-Data script to automate the entire deployment (installs Python, clones the repo, generates `.env`, and setups the daemon).
 
-## How the system is separated
+```bash
+#!/bin/bash
+set -e
+yum update -y
+yum install -y python3.11 python3.11-pip git
 
-- crawler logic stays in its own service
-- ingestion logic is separate from crawling
-- chunking is separate from normalization
-- Qdrant access is isolated in one adapter
-- retrieval is separate from answer generation
-- PydanticAI and LLM layers are visible but still mocked
+# Clone & Environment
+cd /home/ec2-user
+git clone https://github.com/let-the-dreamers-rise/greentrace.git
+cd greentrace/backend
+# (Create .env file here based on requirements)
 
-This separation is intentional so later changes can swap:
-- embedding provider
-- classifier
-- retrieval orchestration
-- final answer model
+# Install Dependencies
+python3.11 -m pip install -e ".[dev]" 
 
-without rewriting the crawler.
+# Set Ownership
+chown -R ec2-user:ec2-user /home/ec2-user/greentrace
 
-## Current limitations
+# Configure systemd daemon
+cat > /etc/systemd/system/greentrace.service << 'SVCEOF'
+[Unit]
+Description=GreenTrace FastAPI Backend
+After=network.target
 
-- PydanticAI is mocked, not integrated yet
-- final answer generation is mocked, not grounded by a real LLM yet
-- current retrieval uses stored chunk text only
-- no auth or production hardening yet
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/greentrace/backend
+ExecStart=/usr/bin/python3.11 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
 
-## Security note
+[Install]
+WantedBy=multi-user.target
+SVCEOF
 
-If real keys were ever pasted into `.env` in a shared context, rotate them.
+systemctl daemon-reload
+systemctl enable greentrace
+systemctl start greentrace
+```
 
-At minimum rotate:
-- `APIFY_TOKEN`
-- `QDRANT_API_KEY`
+### 3. Server Management
+To view live logs from the LLM or Scraper on the EC2 instance:
+```bash
+journalctl -u greentrace.service -f
+```
+To restart the application after pulling new code:
+```bash
+sudo systemctl restart greentrace
+```
+
+---
+*Built with precision for the Surge 2.0 Hackathon.*
