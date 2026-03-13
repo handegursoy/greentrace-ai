@@ -6,7 +6,9 @@
  */
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000";
+  typeof window === "undefined"
+    ? process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://127.0.0.1:8000" // Server
+    : "/api/backend"; // Client (proxied)
 
 // ── Crawl ────────────────────────────────────────────────────────────
 
