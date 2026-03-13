@@ -1,0 +1,51 @@
+:root {
+  color-scheme: dark;
+  --font-display: Georgia, serif;
+  --font-body: system-ui, sans-serif;
+  --bg-root: #040705;
+  --panel-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+  --text-primary: #f5f3eb;
+  --text-secondary: rgba(236, 236, 230, 0.78);
+  --text-muted: rgba(192, 200, 188, 0.62);
+  --accent-bright: #dff68f;
+  --accent-soft: #9be1ab;
+  --border-strong: rgba(167, 186, 158, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg-root);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: rgba(201, 239, 129, 0.28);
+  color: #fefdf8;
+}
