@@ -142,4 +142,3 @@ Deploying the frontend requires specific configurations since the Next.js app is
 *(Important: Ensure `frontend/app/lib/` is actively tracked in Git. The root Python `.gitignore` must use `/lib/` and not `/lib/*` to prevent ignoring these critical Javascript modules).*
 
 ---
-*Built with precision for the Surge 2.0 Hackathon.*
