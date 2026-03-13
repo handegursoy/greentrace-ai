@@ -1,0 +1,59 @@
+{
+    "$schema": "https://apify.com/schemas/v1/dataset.ide.json",
+    "actorSpecification": 1,
+    "fields": {},
+    "views": {
+        "overview": {
+            "title": "Company summaries",
+            "transformation": {
+                "fields": [
+                    "company",
+                    "query",
+                    "overall_status",
+                    "results_per_page",
+                    "max_pages_per_query",
+                    "google_stage",
+                    "crawler_stage",
+                    "forwarded_urls"
+                ]
+            },
+            "display": {
+                "component": "table",
+                "properties": {
+                    "company": {
+                        "label": "Company",
+                        "format": "text"
+                    },
+                    "query": {
+                        "label": "Query",
+                        "format": "text"
+                    },
+                    "overall_status": {
+                        "label": "Status",
+                        "format": "text"
+                    },
+                    "results_per_page": {
+                        "label": "Results / page",
+                        "format": "number"
+                    },
+                    "max_pages_per_query": {
+                        "label": "Max pages",
+                        "format": "number"
+                    },
+                    "google_stage": {
+                        "label": "Google stage",
+                        "format": "object"
+                    },
+                    "crawler_stage": {
+                        "label": "Crawler stage",
+                        "format": "object"
+                    },
+                    "forwarded_urls": {
+                        "label": "Forwarded URLs",
+                        "format": "array"
+                    }
+                }
+            }
+        }
+    }
+}

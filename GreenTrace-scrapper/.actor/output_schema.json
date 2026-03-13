@@ -1,0 +1,12 @@
+{
+    "$schema": "https://apify.com/schemas/v1/output.ide.json",
+    "actorOutputSchemaVersion": 1,
+    "title": "ESG search output",
+    "properties": {
+        "results": {
+            "type": "string",
+            "title": "Combined results dataset",
+            "template": "{{links.apiDefaultDatasetUrl}}/items"
+        }
+    }
+}
