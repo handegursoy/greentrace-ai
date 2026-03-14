@@ -207,8 +207,8 @@ yum install -y python3.11 python3.11-pip git
 
 # Clone & Environment
 cd /home/ec2-user
-git clone https://github.com/let-the-dreamers-rise/greentrace.git
-cd greentrace/backend
+git clone https://github.com/handegursoy/greentrace-ai
+cd greentrace-ai/backend
 # (Create .env file here based on requirements)
 
 # Install Dependencies
