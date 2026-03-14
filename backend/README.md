@@ -40,7 +40,7 @@ graph TD;
     subgraph "Data Ingestion Pipeline"
         FastAPI -->|"Trigger Crawl"| ApifyActor[Apify Scraper Actor]
         ApifyActor -->|"Raw HTML/JSON"| Normalizer[Evidence Normalizer]
-        Normalizer -->|"Cleaned Text"| Chunker[Article Chunker (180 words/chunk)]
+        Normalizer -->|"Cleaned Text"| Chunker["Article Chunker (180 words/chunk)"]
         Chunker -->|"Text Chunks"| Qdrant[Qdrant Vector DB]
         Qdrant -->|"Generate Embeddings"| FastEmbed[BGE-Small-En FastEmbed]
     end
