@@ -3,14 +3,15 @@
 > Cross-references what companies claim with what NGOs, journalists, and regulators actually report — live, cited, grounded.
 
 **Built for GenAI Zürich Hackathon 2026 — Apify Challenge**
+🔗 [Live demo](https://greentrace-tau.vercel.app)
 
 ---
 
 ## The Problem
 
-According to the European Commission, 53% of green claims in the EU are vague, misleading, or unfounded and 40% have no supporting evidence. This is not a distant problem: in June 2024, the Swiss Federal Council took note of new self-regulatory provisions to combat greenwashing in the financial sector, explicitly tracking EU regulatory developments as a reference framework.
+According to the European Commission, 53% of green claims in the EU are vague, misleading, or unfounded — and 40% have no supporting evidence. This is not a distant problem: in June 2024, the Swiss Federal Council took note of new self-regulatory provisions to combat greenwashing in the financial sector, explicitly tracking EU regulatory developments as a reference framework.
 
-Companies publish sustainability reports. Regulators and NGOs publish contradictions. Connecting those sources takes hours of manual research. GreenTrace does it in seconds with every claim traced to a real source.
+Companies publish sustainability reports. Regulators and NGOs publish contradictions. Connecting those sources takes hours of manual research. GreenTrace does it in seconds — with every claim traced to a real source.
 
 Existing AI tools make this worse: they hallucinate citations and serve stale training data as fact.
 
