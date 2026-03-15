@@ -8,7 +8,7 @@
 
 ## The Problem
 
-According to the European Commission, 53% of green claims in the EU are vague, misleading, or unfounded — and 40% have no supporting evidence. This is not a distant problem: in June 2024, the Swiss Federal Council took note of new self-regulatory provisions to combat greenwashing in the financial sector, explicitly tracking EU regulatory developments as a reference framework.
+According to the European Commission, 53% of green claims in the EU are vague, misleading, or unfounded and 40% have no supporting evidence. This is not a distant problem: in June 2024, the Swiss Federal Council took note of new self-regulatory provisions to combat greenwashing in the financial sector, explicitly tracking EU regulatory developments as a reference framework.
 
 Companies publish sustainability reports. Regulators and NGOs publish contradictions. Connecting those sources takes hours of manual research. GreenTrace does it in seconds — with every claim traced to a real source.
 
@@ -20,10 +20,16 @@ Existing AI tools make this worse: they hallucinate citations and serve stale tr
 
 You type a company name. GreenTrace scrapes live news, NGO reports, and regulatory decisions — then returns a structured verdict: **what the company claims vs. what independent sources say**. Every claim has a real source link and publication date.
 
-**Example:**
+GreenTrace works across sectors — from fashion to food to finance. Any company that publishes sustainability claims can be scrutinised.
+
+**Examples:**
 > "Is H&M's Conscious Collection actually sustainable?"
 
 GreenTrace finds: The Norwegian Consumer Authority warned that H&M's sustainability claims may be misleading — source linked, date stamped.
+
+> "What do NGOs say about Nestlé's plastic recycling claims?"
+
+GreenTrace surfaces contradicting reports from independent watchdogs and investigative journalists — cross-referenced against Nestlé's own sustainability messaging.
 
 ---
 
@@ -170,6 +176,7 @@ GROQ_MODEL=llama-3.3-70b-versatile
 2. `"What do NGOs say about Nestlé's plastic recycling claims?"`
 3. `"Which Swiss supermarket has the best ESG track record?"`
 4. `"What do regulators say about Zara's supply chain?"`
+5. `"Are UBS's net-zero commitments backed by independent evidence?"`
 
 ---
 
