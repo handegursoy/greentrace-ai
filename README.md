@@ -3,7 +3,7 @@
 > Cross-references what companies claim with what NGOs, journalists, and regulators actually report — live, cited, grounded.
 
 **Built for GenAI Zürich Hackathon 2026 — Apify Challenge**
-🔗 [Live demo](https://greentrace-tau.vercel.app)
+🔗 [Live demo](https://www.youtube.com/watch?v=iNM-WdhqBiM&embeds_referring_euri=https%3A%2F%2Fdevpost.com%2F&source_ve_path=MjM4NTE)
 
 ---
 
